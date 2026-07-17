@@ -1,0 +1,325 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/kasumi-engine/kasumi-engine/config/schema.json",
+  "title": "Kasumi Engine Configuration",
+  "description": "Shared configuration schema for all Kasumi Engine services. Validated by both Go and Python config loaders.",
+  "type": "object",
+  "properties": {
+    "ingestion": {
+      "type": "object",
+      "description": "Go-based gRPC ingestion service configuration",
+      "properties": {
+        "host": {
+          "type": "string",
+          "default": "0.0.0.0",
+          "description": "gRPC server bind address"
+        },
+        "port": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 65535,
+          "default": 50051,
+          "description": "gRPC server port"
+        },
+        "log_level": {
+          "type": "string",
+          "enum": ["debug", "info", "warn", "error"],
+          "default": "info",
+          "description": "Logging level"
+        },
+        "max_concurrent_streams": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000,
+          "default": 1000,
+          "description": "Maximum concurrent gRPC streams"
+        },
+        "backpressure_buffer_size": {
+          "type": "integer",
+          "minimum": 100,
+          "maximum": 1000000,
+          "default": 10000,
+          "description": "Size of the internal event buffer before load-shedding"
+        },
+        "rate_limit_rps": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 5000,
+          "description": "Maximum requests per second per client"
+        },
+        "tls_enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable TLS for gRPC"
+        },
+        "tls_cert_path": {
+          "type": "string",
+          "default": "",
+          "description": "Path to TLS certificate file"
+        },
+        "tls_key_path": {
+          "type": "string",
+          "default": "",
+          "description": "Path to TLS private key file"
+        }
+      },
+      "required": ["host", "port"],
+      "additionalProperties": false
+    },
+    "retrieval": {
+      "type": "object",
+      "description": "Python FastAPI retrieval service configuration",
+      "properties": {
+        "host": {
+          "type": "string",
+          "default": "0.0.0.0",
+          "description": "FastAPI server bind address"
+        },
+        "port": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 65535,
+          "default": 8000,
+          "description": "FastAPI server port"
+        },
+        "log_level": {
+          "type": "string",
+          "enum": ["debug", "info", "warn", "error"],
+          "default": "info",
+          "description": "Logging level"
+        },
+        "candidate_count": {
+          "type": "integer",
+          "minimum": 10,
+          "maximum": 5000,
+          "default": 500,
+          "description": "Number of ANN candidates to retrieve"
+        },
+        "latency_budget_ms": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000,
+          "default": 20,
+          "description": "Target latency budget for candidate generation in milliseconds"
+        },
+        "index_type": {
+          "type": "string",
+          "enum": ["faiss", "milvus"],
+          "default": "faiss",
+          "description": "Vector index backend"
+        },
+        "faiss_nlist": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 256,
+          "description": "FAISS IVF number of Voronoi cells"
+        },
+        "faiss_nprobe": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 16,
+          "description": "FAISS IVF number of cells to probe at query time"
+        },
+        "embedding_dim": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 128,
+          "description": "Embedding vector dimensionality"
+        }
+      },
+      "required": ["host", "port"],
+      "additionalProperties": false
+    },
+    "reranking": {
+      "type": "object",
+      "description": "C++/TensorRT reranking service configuration",
+      "properties": {
+        "host": {
+          "type": "string",
+          "default": "0.0.0.0",
+          "description": "Reranking service bind address"
+        },
+        "port": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 65535,
+          "default": 8001,
+          "description": "Reranking service port"
+        },
+        "latency_budget_ms": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000,
+          "default": 30,
+          "description": "Hard latency budget for reranking in milliseconds"
+        },
+        "model_type": {
+          "type": "string",
+          "enum": ["lightgbm", "two_tower"],
+          "default": "lightgbm",
+          "description": "LTR model type"
+        },
+        "triton_url": {
+          "type": "string",
+          "default": "localhost:8002",
+          "description": "Triton Inference Server gRPC URL"
+        },
+        "fallback_enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable fallback to raw ANN order on timeout"
+        },
+        "dynamic_batching_max_batch_size": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 512,
+          "default": 32,
+          "description": "Maximum batch size for dynamic batching"
+        }
+      },
+      "required": ["host", "port"],
+      "additionalProperties": false
+    },
+    "redis": {
+      "type": "object",
+      "description": "Redis feature store configuration",
+      "properties": {
+        "host": {
+          "type": "string",
+          "default": "localhost",
+          "description": "Redis server host"
+        },
+        "port": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 65535,
+          "default": 6379,
+          "description": "Redis server port"
+        },
+        "password": {
+          "type": "string",
+          "default": "",
+          "description": "Redis password (empty for no auth)"
+        },
+        "db": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 15,
+          "default": 0,
+          "description": "Redis database index"
+        },
+        "max_connections": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000,
+          "default": 50,
+          "description": "Maximum connection pool size"
+        },
+        "key_prefix": {
+          "type": "string",
+          "default": "kasumi:",
+          "description": "Prefix for all Redis keys"
+        },
+        "feature_ttl_seconds": {
+          "type": "integer",
+          "minimum": 60,
+          "default": 3600,
+          "description": "TTL for feature store entries in seconds"
+        },
+        "session_ttl_seconds": {
+          "type": "integer",
+          "minimum": 60,
+          "default": 1800,
+          "description": "TTL for session data in seconds"
+        }
+      },
+      "required": ["host", "port"],
+      "additionalProperties": false
+    },
+    "privacy": {
+      "type": "object",
+      "description": "APPI privacy configuration — differential privacy and anonymization settings",
+      "properties": {
+        "epsilon": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 10.0,
+          "default": 1.0,
+          "description": "Differential privacy epsilon budget per aggregation window"
+        },
+        "sensitivity": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "default": 1.0,
+          "description": "Query sensitivity for Laplace mechanism"
+        },
+        "salt_rotation_hours": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 168,
+          "default": 24,
+          "description": "Hours between hash salt rotations"
+        },
+        "budget_ceiling": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "default": 10.0,
+          "description": "Maximum cumulative epsilon spend before refusing writes"
+        },
+        "budget_alert_threshold": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 1.0,
+          "default": 0.8,
+          "description": "Fraction of budget ceiling that triggers an alert (0.0–1.0)"
+        },
+        "aggregation_window_minutes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1440,
+          "default": 15,
+          "description": "Sliding window size for aggregation in minutes"
+        },
+        "redact_session_ids_in_logs": {
+          "type": "boolean",
+          "default": true,
+          "description": "Redact raw session identifiers from log output"
+        }
+      },
+      "required": ["epsilon", "budget_ceiling"],
+      "additionalProperties": false
+    },
+    "observability": {
+      "type": "object",
+      "description": "Prometheus, Grafana, and tracing configuration",
+      "properties": {
+        "metrics_enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable Prometheus metrics exposition"
+        },
+        "metrics_port": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 65535,
+          "default": 9090,
+          "description": "Prometheus metrics port"
+        },
+        "tracing_enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable distributed tracing"
+        },
+        "log_format": {
+          "type": "string",
+          "enum": ["json", "text"],
+          "default": "json",
+          "description": "Log output format"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "required": ["ingestion", "retrieval", "reranking", "redis", "privacy"],
+  "additionalProperties": false
+}

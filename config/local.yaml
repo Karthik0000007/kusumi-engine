@@ -1,0 +1,35 @@
+# Kasumi Engine — Local Development Configuration
+# Overrides default.yaml for local dev environments.
+# Merged on top of default.yaml — only specify values that differ.
+
+ingestion:
+  log_level: "debug"
+  rate_limit_rps: 10000  # Relaxed for local testing
+  tls_enabled: false
+
+retrieval:
+  log_level: "debug"
+  candidate_count: 100  # Smaller candidate set for faster iteration
+  index_type: "faiss"   # Use FAISS locally (no Milvus dependency)
+
+reranking:
+  latency_budget_ms: 100  # Relaxed budget for dev machines
+  fallback_enabled: true
+
+redis:
+  host: "localhost"
+  port: 6379
+  password: ""
+  db: 0
+  max_connections: 10
+
+privacy:
+  epsilon: 5.0              # Relaxed for dev — more noise tolerance
+  budget_ceiling: 50.0      # Higher ceiling for testing
+  salt_rotation_hours: 1    # Faster rotation for testing
+  redact_session_ids_in_logs: false  # Allow for debugging
+
+observability:
+  metrics_enabled: true
+  tracing_enabled: false
+  log_format: "text"  # Human-readable logs for local dev

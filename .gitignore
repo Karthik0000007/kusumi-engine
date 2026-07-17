@@ -1,0 +1,87 @@
+# Binaries / Build output
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.o
+*.a
+*.out
+
+# Go
+ingestion/vendor/
+ingestion/coverage.out
+ingestion/coverage.html
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+*.egg
+.eggs/
+*.whl
+.venv/
+venv/
+env/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+htmlcov/
+.coverage
+.coverage.*
+
+# C++
+reranking/build/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile.cmake
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+
+# Environment & Secrets
+.env
+.env.*
+*.pem
+*.key
+
+# Docker
+docker-compose.override.yml
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Data / Models (large files)
+*.bin
+*.pkl
+*.pt
+*.onnx
+*.trt
+*.engine
+*.faiss
+*.index
+data/
+models/
+
+# Notebooks checkpoints
+.ipynb_checkpoints/
+
+# Benchmark results (keep results/ but not tmp)
+benchmarks/tmp/
+
+# Logs
+*.log
+logs/

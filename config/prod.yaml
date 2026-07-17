@@ -1,0 +1,51 @@
+# Kasumi Engine — Production Configuration
+# Overrides default.yaml for production deployments.
+# Sensitive values (passwords, keys) should come from environment variables.
+
+ingestion:
+  log_level: "info"
+  max_concurrent_streams: 5000
+  backpressure_buffer_size: 50000
+  rate_limit_rps: 10000
+  tls_enabled: true
+  tls_cert_path: "/etc/kasumi/tls/server.crt"
+  tls_key_path: "/etc/kasumi/tls/server.key"
+
+retrieval:
+  log_level: "info"
+  candidate_count: 500
+  latency_budget_ms: 20
+  index_type: "faiss"
+  faiss_nlist: 1024
+  faiss_nprobe: 32
+  embedding_dim: 128
+
+reranking:
+  latency_budget_ms: 30
+  fallback_enabled: true
+  dynamic_batching_max_batch_size: 64
+
+redis:
+  host: "redis.kasumi.internal"
+  port: 6379
+  # password: set via KASUMI_REDIS_PASSWORD env var
+  db: 0
+  max_connections: 200
+  key_prefix: "kasumi:prod:"
+  feature_ttl_seconds: 3600
+  session_ttl_seconds: 1800
+
+privacy:
+  epsilon: 1.0                # Tight privacy budget for production
+  sensitivity: 1.0
+  salt_rotation_hours: 24
+  budget_ceiling: 10.0        # Strict ceiling
+  budget_alert_threshold: 0.8
+  aggregation_window_minutes: 15
+  redact_session_ids_in_logs: true  # Always redact in production
+
+observability:
+  metrics_enabled: true
+  metrics_port: 9090
+  tracing_enabled: true
+  log_format: "json"

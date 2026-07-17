@@ -1,0 +1,59 @@
+# Kasumi Engine — Default Configuration
+# Baseline defaults for all services. Override with local.yaml or prod.yaml.
+# Environment variables with KASUMI_ prefix take highest precedence.
+
+ingestion:
+  host: "0.0.0.0"
+  port: 50051
+  log_level: "info"
+  max_concurrent_streams: 1000
+  backpressure_buffer_size: 10000
+  rate_limit_rps: 5000
+  tls_enabled: false
+  tls_cert_path: ""
+  tls_key_path: ""
+
+retrieval:
+  host: "0.0.0.0"
+  port: 8000
+  log_level: "info"
+  candidate_count: 500
+  latency_budget_ms: 20
+  index_type: "faiss"
+  faiss_nlist: 256
+  faiss_nprobe: 16
+  embedding_dim: 128
+
+reranking:
+  host: "0.0.0.0"
+  port: 8001
+  latency_budget_ms: 30
+  model_type: "lightgbm"
+  triton_url: "localhost:8002"
+  fallback_enabled: true
+  dynamic_batching_max_batch_size: 32
+
+redis:
+  host: "localhost"
+  port: 6379
+  password: ""
+  db: 0
+  max_connections: 50
+  key_prefix: "kasumi:"
+  feature_ttl_seconds: 3600
+  session_ttl_seconds: 1800
+
+privacy:
+  epsilon: 1.0
+  sensitivity: 1.0
+  salt_rotation_hours: 24
+  budget_ceiling: 10.0
+  budget_alert_threshold: 0.8
+  aggregation_window_minutes: 15
+  redact_session_ids_in_logs: true
+
+observability:
+  metrics_enabled: true
+  metrics_port: 9090
+  tracing_enabled: false
+  log_format: "json"
