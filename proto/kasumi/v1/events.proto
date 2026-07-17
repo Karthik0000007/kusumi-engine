@@ -1,0 +1,98 @@
+syntax = "proto3";
+
+package kasumi.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/kasumi-engine/ingestion/api/kasumi/v1";
+
+// ---------------------------------------------------------
+// Event Intake
+// ---------------------------------------------------------
+
+// SessionContext provides the environment and ephemeral state for a given event.
+// Under APPI compliance, the user_id / session_id must not be logged directly;
+// they should be hashed at the edge before long-term persistence or aggregation.
+message SessionContext {
+  string session_id = 1;
+  string user_id = 2; // Optional, often empty for anonymous users
+  string device_type = 3;
+  string geo_region = 4; // High-level region for latency routing / broad popularity
+  google.protobuf.Timestamp timestamp = 5;
+}
+
+// ClickEvent is emitted when a user clicks on an item.
+message ClickEvent {
+  SessionContext context = 1;
+  string item_id = 2;
+  string source_placement = 3; // e.g., "homepage_feed", "search_results"
+  int32 rank_position = 4;     // Position in the list where the item was shown
+}
+
+// DwellEvent is emitted when a user views an item for a significant duration.
+message DwellEvent {
+  SessionContext context = 1;
+  string item_id = 2;
+  int32 duration_ms = 3;
+}
+
+// ---------------------------------------------------------
+// Recommendation
+// ---------------------------------------------------------
+
+// RecommendationRequest asks for a personalized ranked list of items.
+message RecommendationRequest {
+  SessionContext context = 1;
+  int32 num_candidates = 2;     // How many final candidates to return (e.g., 20)
+  repeated string filter_categories = 3; // Optional category filters
+}
+
+// ScoredItem is a single ranked candidate.
+message ScoredItem {
+  string item_id = 1;
+  float score = 2;
+  string fallback_reason = 3; // Populated if reranking failed and fallback was used
+}
+
+// RecommendationResponse contains the final ordered candidates.
+message RecommendationResponse {
+  repeated ScoredItem items = 1;
+  string recommendation_id = 2; // Tracing ID for joining with subsequent clicks
+  int32 latency_ms = 3;         // Total server-side latency for observation
+}
+
+// ---------------------------------------------------------
+// Services
+// ---------------------------------------------------------
+
+// IngestionService receives real-time behavioral data.
+service IngestionService {
+  // Unary ingestion for a single click
+  rpc IngestClick(ClickEvent) returns (IngestionResponse);
+  
+  // Unary ingestion for a single dwell
+  rpc IngestDwell(DwellEvent) returns (IngestionResponse);
+  
+  // Streaming ingestion for high-throughput batching from a client SDK
+  rpc StreamEvents(stream StreamEventWrapper) returns (IngestionResponse);
+}
+
+// StreamEventWrapper wraps either a click or a dwell for multiplexed streaming.
+message StreamEventWrapper {
+  oneof event {
+    ClickEvent click = 1;
+    DwellEvent dwell = 2;
+  }
+}
+
+// IngestionResponse is returned after successful ingestion.
+message IngestionResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+// RecommendationService serves real-time ranked items.
+service RecommendationService {
+  // Get a personalized recommendation list
+  rpc GetRecommendations(RecommendationRequest) returns (RecommendationResponse);
+}

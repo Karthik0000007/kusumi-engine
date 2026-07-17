@@ -1,0 +1,12 @@
+version: v1
+plugins:
+  - plugin: go
+    out: ../ingestion/api
+    opt: paths=source_relative
+  - plugin: go-grpc
+    out: ../ingestion/api
+    opt: paths=source_relative
+  - plugin: python
+    out: ../retrieval
+  - plugin: mypy
+    out: ../retrieval
